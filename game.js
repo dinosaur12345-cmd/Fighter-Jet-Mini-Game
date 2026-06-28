@@ -8,6 +8,7 @@ const CONFIG = {
   SECONDARY_COOLDOWN: 3000,
   ULTIMATE_COOLDOWN: 10000,
   ULTIMATE_CHARGE_TIME: 5000,
+  SHARE_URL: 'https://dinosaur12345-cmd.github.io/Fighter-Jet-Mini-Game/',
   BACKGROUND: {
     GRADIENT_TOP: '#08082a',
     GRADIENT_MID: '#050515',
@@ -241,20 +242,8 @@ class Player {
     const halfSize = 30;
     
     if (input.touchTarget) {
-      const dx = input.touchTarget.x - this.position.x;
-      const dy = input.touchTarget.y - this.position.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const touchSpeed = speed * 1.8;
-      
-      if (dist > 5) {
-        const moveX = (dx / dist) * Math.min(touchSpeed, dist);
-        const moveY = (dy / dist) * Math.min(touchSpeed, dist);
-        this.position.x += moveX;
-        this.position.y += moveY;
-      } else {
-        this.position.x = input.touchTarget.x;
-        this.position.y = input.touchTarget.y;
-      }
+      this.position.x = input.touchTarget.x;
+      this.position.y = input.touchTarget.y;
     } else {
       if (input.up) this.position.y -= speed;
       if (input.down) this.position.y += speed;
@@ -4144,20 +4133,22 @@ class UIManager {
     if (typeof QRCode === 'undefined') {
       this.showToast('二维码库加载中，请稍后重试');
       console.error('QRCode library not loaded');
+      this.loadQRCodeLibrary(() => {
+        this.generateQrCode();
+      });
       return;
     }
     
-    const protocol = window.location.protocol;
-    const host = window.location.host;
-    const port = window.location.port;
-    
     let gameUrl;
-    if (port && port !== '80' && port !== '443') {
-      gameUrl = `${protocol}//${host}`;
-    } else if (host === 'localhost' || host === '127.0.0.1') {
-      gameUrl = 'http://localhost:8080';
+    if (CONFIG.SHARE_URL) {
+      gameUrl = CONFIG.SHARE_URL;
     } else {
-      gameUrl = `${protocol}//${host}`;
+      const isFileProtocol = window.location.protocol === 'file:';
+      if (isFileProtocol) {
+        gameUrl = window.location.href;
+      } else {
+        gameUrl = window.location.origin + window.location.pathname + window.location.search + window.location.hash;
+      }
     }
     
     const urlDisplay = document.getElementById('qrUrlDisplay');
@@ -4182,6 +4173,22 @@ class UIManager {
       console.error('QR Code generation exception:', e);
       this.showToast('二维码生成失败');
     }
+  }
+
+  loadQRCodeLibrary(callback) {
+    if (typeof QRCode !== 'undefined') {
+      if (callback) callback();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js';
+    script.onload = () => {
+      if (callback) callback();
+    };
+    script.onerror = () => {
+      this.showToast('二维码库加载失败，请检查网络连接');
+    };
+    document.head.appendChild(script);
   }
   
   downloadQrCode() {
@@ -4240,10 +4247,15 @@ class UIManager {
   
   showModal(modalId) {
     document.getElementById(modalId).style.display = 'flex';
+    document.body.style.touchAction = 'auto';
   }
   
   hideModal(modalId) {
     document.getElementById(modalId).style.display = 'none';
+    const openModals = document.querySelectorAll('.modal[style*="flex"]');
+    if (openModals.length === 0) {
+      document.body.style.touchAction = '';
+    }
   }
   
   updateHUD() {
@@ -4443,7 +4455,11 @@ class GameEngine {
     
     if (window.innerWidth < 768) {
       width = Math.min(window.innerWidth - 20, 480);
-      height = Math.min(window.innerHeight - 200, 360);
+      const gameInfo = document.getElementById('gameInfo');
+      const infoHeight = gameInfo ? gameInfo.offsetHeight + 20 : 80;
+      const controlsArea = window.innerWidth < 768 && window.matchMedia('(pointer: coarse)').matches ? 220 : 40;
+      const hudHeight = 50;
+      height = Math.min(window.innerHeight - infoHeight - controlsArea - hudHeight, 360);
     }
     
     this.canvas.width = width;

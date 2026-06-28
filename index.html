@@ -10,7 +10,9 @@
   <meta name="format-detection" content="telephone=no">
   <title>雷霆战机</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://unpkg.com/qrcode@1.5.0/build/qrcode.min.js"
+          onerror="this.remove(); var s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js'; document.head.appendChild(s);">
+  </script>
 </head>
 <body>
   <div id="gameContainer">
@@ -41,7 +43,7 @@
       <button class="btn shop-btn" id="shopBtn">🏪 战机商店</button>
       <button class="btn" id="achievementsBtn">🏆 成就</button>
       <button class="btn qr-btn" id="qrCodeBtn">📱 扫码分享</button>
-      <p style="color: #888; margin-top: 20px; font-size: 0.9rem;">
+      <p class="keyboard-hint" style="color: #888; margin-top: 20px; font-size: 0.9rem;">
         WASD/方向键移动 | 空格副武器 | E必杀技
       </p>
     </div>
