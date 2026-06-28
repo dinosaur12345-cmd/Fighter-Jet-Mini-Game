@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0a0a1a">
+  <meta name="format-detection" content="telephone=no">
+  <title>雷霆战机</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://unpkg.com/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+  <div id="gameContainer">
+    <div id="menuScreen" class="screen">
+      <h1>⚡ 雷霆战机 ⚡</h1>
+      <div id="pointsDisplay" class="points-display">
+        <span class="points-icon">💰</span>
+        <span class="points-value" id="menuCoins">0</span>
+        <span class="points-label">金币</span>
+      </div>
+      <div class="settings-panel">
+        <div class="difficulty-options">
+          <div class="difficulty-option selected" data-difficulty-id="easy">
+            <span class="difficulty-icon">🌱</span>
+            <span class="difficulty-name">简单</span>
+          </div>
+          <div class="difficulty-option" data-difficulty-id="normal">
+            <span class="difficulty-icon">⚡</span>
+            <span class="difficulty-name">普通</span>
+          </div>
+          <div class="difficulty-option" data-difficulty-id="hard">
+            <span class="difficulty-icon">🔥</span>
+            <span class="difficulty-name">困难</span>
+          </div>
+        </div>
+      </div>
+      <button class="btn" id="startBtn">开始游戏</button>
+      <button class="btn shop-btn" id="shopBtn">🏪 战机商店</button>
+      <button class="btn" id="achievementsBtn">🏆 成就</button>
+      <button class="btn qr-btn" id="qrCodeBtn">📱 扫码分享</button>
+      <p style="color: #888; margin-top: 20px; font-size: 0.9rem;">
+        WASD/方向键移动 | 空格副武器 | E必杀技
+      </p>
+    </div>
+
+    <div id="gameScreen" style="display: none;">
+      <div id="gameInfo">
+        <div class="info-item">
+          <svg class="info-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+          </svg>
+          <span class="info-label">分数</span>
+          <span class="info-value" id="score">0</span>
+        </div>
+        <div class="info-item">
+          <svg class="info-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(-20 12 12)"/>
+          </svg>
+          <span class="info-label">关卡</span>
+          <span class="info-value" id="level">第1关</span>
+        </div>
+        <div class="info-item">
+          <svg class="info-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 6 Q6 14 10 6 T16 16 T20 8 L22 10"/>
+          </svg>
+          <span class="info-label">波次</span>
+          <span class="info-value" id="wave">1/5</span>
+        </div>
+        <div class="info-item">
+          <svg class="info-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="8"/>
+            <circle cx="12" cy="12" r="5"/>
+            <path d="M12 8v8M8 12h8"/>
+          </svg>
+          <span class="info-label">金币</span>
+          <span class="info-value" id="coins">0</span>
+        </div>
+        <div class="info-item">
+          <svg class="info-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19 L20 19 L16 9 L12 14 L8 9 Z"/>
+            <path d="M6 19 L4 11 L8 11 Z M18 19 L20 11 L16 11 Z"/>
+          </svg>
+          <span class="info-label">最高分</span>
+          <span class="info-value" id="highScore">0</span>
+        </div>
+      </div>
+      
+      <div id="gameMain">
+        <canvas id="gameCanvas"></canvas>
+        <div id="controls">
+          <button class="btn control-btn" id="pauseBtn">
+            <svg class="ctrl-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="6" y="4" width="4" height="16" rx="1"/>
+              <rect x="14" y="4" width="4" height="16" rx="1"/>
+            </svg>
+            <span class="ctrl-text">暂停</span>
+          </button>
+          <button class="btn control-btn" id="restartBtn">
+            <svg class="ctrl-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 3 L21 9 L15 9"/>
+              <path d="M3 21 L3 15 L9 15"/>
+              <path d="M21 9A9 9 0 1 0 17.66 17.66"/>
+            </svg>
+            <span class="ctrl-text">重新开始</span>
+          </button>
+          <button class="btn control-btn" id="backToMenuBtn">
+            <svg class="ctrl-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19L5 12L12 5"/>
+            </svg>
+            <span class="ctrl-text">返回</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="hud">
+        <div class="hud-bar health-bar">
+          <span class="bar-label">血量</span>
+          <div class="bar-track">
+            <div class="bar-fill" id="healthBar"></div>
+            <div class="bar-overlay" id="healthOverlay"></div>
+          </div>
+        </div>
+        <div class="hud-bar energy-bar">
+          <span class="bar-label">必杀</span>
+          <div class="bar-track">
+            <div class="bar-fill" id="energyBar"></div>
+            <div class="bar-shimmer"></div>
+          </div>
+        </div>
+        <div class="weapon-level">
+          <svg class="wpn-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12,2 6,10 9,10 9,22 15,22 15,10 18,10"/>
+          </svg>
+          <span class="weapon-text" id="weaponLevel">Lv.1</span>
+        </div>
+      </div>
+
+      <div id="mobileControls">
+        <div class="d-pad">
+          <button class="d-btn d-up" id="dUp">↑</button>
+          <button class="d-btn d-left" id="dLeft">←</button>
+          <button class="d-btn d-right" id="dRight">→</button>
+          <button class="d-btn d-down" id="dDown">↓</button>
+          <div class="d-center"></div>
+        </div>
+        <div class="action-buttons">
+          <button class="action-btn secondary" id="mobileSecondary">副武器</button>
+          <button class="action-btn ultimate" id="mobileUltimate">必杀技</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameOverScreen" class="screen" style="display: none;">
+      <h2>游戏结束</h2>
+      <p id="finalScore">最终得分: 0</p>
+      <p id="coinsEarned" style="color: #ffd700;">获得金币: 0</p>
+      <button class="btn" id="resumeBtn">再来一次</button>
+      <button class="btn" id="backToMenuFromGameOverBtn" style="background: rgba(255,255,255,0.1); color: #fff; margin-top: 15px;">
+        返回菜单
+      </button>
+    </div>
+
+    <div id="shopModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🏪 战机商店</h2>
+          <button class="close-btn" id="closeShopBtn">×</button>
+        </div>
+        <div class="shop-body">
+          <div class="shop-points">
+            <span class="shop-points-icon">💰</span>
+            <span class="shop-points-value" id="shopCoins">0</span>
+            <span class="shop-points-label">当前金币</span>
+          </div>
+          <div class="planes-section">
+            <h3>✈️ 战机购买</h3>
+            <div class="planes-grid" id="planesGrid"></div>
+          </div>
+          <div class="upgrades-section">
+            <h3>⬆️ 战机升级</h3>
+            <div class="upgrade-items" id="upgradeItems"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="closeShopBtn2">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="achievementModal" class="modal" style="display: none;">
+      <div class="modal-content achievement-content">
+        <div class="modal-header">
+          <h2>🏆 成就</h2>
+          <button class="close-btn" id="closeAchievementBtn">×</button>
+        </div>
+        <div class="achievement-body" id="achievementBody"></div>
+        <div class="modal-footer">
+          <button class="btn" id="closeAchievementBtn2">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="qrCodeModal" class="modal" style="display: none;">
+      <div class="modal-content qr-content">
+        <div class="modal-header">
+          <h2>📱 扫码分享游戏</h2>
+          <button class="close-btn" id="closeQrBtn">×</button>
+        </div>
+        <div class="qr-body">
+          <div class="qr-info">
+            <p class="qr-tip">使用手机扫描下方二维码，即可在移动端畅玩游戏</p>
+          </div>
+          <div class="qr-code-container">
+            <canvas id="qrCanvas"></canvas>
+          </div>
+          <div class="qr-address">
+            <span class="qr-label">访问地址：</span>
+            <span class="qr-url" id="qrUrlDisplay">-</span>
+          </div>
+          <div class="qr-actions">
+            <button class="btn qr-action-btn" id="downloadQrBtn">💾 保存二维码</button>
+            <button class="btn qr-action-btn" id="copyUrlBtn">📋 复制链接</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="closeQrBtn2">关闭</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="notificationToast" class="toast" style="display: none;">
+      <span id="toastMessage"></span>
+    </div>
+
+    <button id="soundToggle">🔊</button>
+  </div>
+  
+  <script src="game.js"></script>
+</body>
+</html>
